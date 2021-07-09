@@ -1,6 +1,5 @@
 ## Docker & Kubernetes: The Practical Guide.
-## Learn Docker, Docker Compose, Multi-Container Projects, Deployment and all about Kubernetes from the ground up!
-- [Udemy Course](https://www.udemy.com/course/docker-kubernetes-the-practical-guide/).
+- Learn Docker, Docker Compose, Multi-Container Projects, Deployment and all about Kubernetes from the ground up! [Udemy Course](https://www.udemy.com/course/docker-kubernetes-the-practical-guide/).
 
 - GETTING STARTED:
     1. Docker: A container technology. Creating and managing containers technology.
