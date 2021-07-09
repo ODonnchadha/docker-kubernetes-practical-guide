@@ -18,3 +18,9 @@
     4. Setup: Overview:
         - Requirements met: Install Docker desktop. Requirements not met: Install Docker toolbox. (Linux is native.)
         - Installing Docker on Windows: NOTE: PowerShell is a default tool that ships with Windows administration.
+        - Microsoft Windows 10 Pro. (NOTE: Windows 10 Home. There are additional steps.)
+        - [Enable Hyper-V](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v#:~:text=Enable%20the%20Hyper-V%20role%20through%20Settings%20%201,4%20Select%20Hyper-V%20and%20click%20OK.%20See%20More)
+        ```powershell
+            Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
+            Enable-WindowsOptionalFeature -Online -FeatureName containers -All
+        ```
