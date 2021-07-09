@@ -28,3 +28,15 @@
         ```javascript
             docker -v
         ```
+    5. Docker Tool & Building Blocks.
+        - Docker Engine. Docker Desktop: Daemon & CLI. Docker Hub: (Service that allows us to host our images.) Docker Compose. Kubernetes.
+    6. Installing & Configuring IDE:
+        - Base image: FROM node:14
+        - Directory: WORKDIR /app
+        - Expose this port to the outside world: EXPOSE 3000
+        - Execute the following: CMD [ "node", "app.mjs" ]
+        ```javascript
+            docker run -p 3000:3000 sha256:07f6a98f1b0ff619e4519666b3b5020a241ca00937125af50f0b3cd10975f008
+            docker ps
+            docker stop priceless_engelbart
+        ```
