@@ -36,7 +36,176 @@
         - Expose this port to the outside world: EXPOSE 3000
         - Execute the following: CMD [ "node", "app.mjs" ]
         ```javascript
-            docker run -p 3000:3000 sha256:07f6a98f1b0ff619e4519666b3b5020a241ca00937125af50f0b3cd10975f008
+            docker run -p 3000:3000 07f6a98f1b0f 
             docker ps
             docker stop priceless_engelbart
         ```
+    7. Course outline:
+        - Foundation. Data & volumes. COntgainers & networking.
+        - Real life: Multi-container projects. Unsing Docker compose. Utility containers. Deploying Docker containers.
+        - Kubernetes: Introduction & basics. Data & valumes. Networking. Deployment.
+
+- DOCKER IMAGES & CONTAINERS:
+    1. Images versus containers.
+        - Docker -> containers. The running unit of software.
+        - Docker -> images. The templates/blueprints for containers. The image contains the code/tools to execute. Container to run/execute the code.
+        - An image can be used to create multiple containers. NOTE: We run containers which are based on images.
+    2. Images:
+        - Use an existing, pre-built images. [Docker Hub](https://hub.docker.com/).
+        ```javascript
+            docker run node
+            docker ps -a
+            docker run -it node
+        ```
+        - Use the interactive terminal. We are now interacting with the container. 
+        - NOTE: Run command creates an instance of the image. Multiple terminals create multiple instances.
+        ```javascript
+            docker run -it node
+        ```
+        - Install the Docker extension via VSCode.
+        - FROM instruction. We'll use node since it exists on Docker hub. "In my own image, pull in *this* image."
+        - COPY . . First dot, outside of the container. Denotes all files in the folder. 
+        - Second dot, where in the image. Try not to use the root. Use a subfolder.
+        - RUN a command within the image. This executes with each image build.
+        - WORKDIR Tell Docker that all command will be run within this folder.
+        - CMD executes when a container is started.
+        - Isolated container. EXPOSE is the entery point with container and local machine.
+        - Create an image: And look for running processes
+        ```javascript
+            docker docker build .
+            docker ps
+        ```
+        - Look for all processes: Then assign the internal/external port.
+        ```javascript
+            docker ps -a
+            docker run -p 3003:80 a0da77fb36b8
+            docker stop silly_brattain
+        ```
+    3. Images are read-only. This will always be true. Images are a closed template. Docker will cache with the build files if the file has not changed.
+        - COPY package.json /app Cache will ensure that npm install does not run again if the server.js file is modified. Layer architure.
+    4. A first summary:
+        - Image: Our code and environment by way of detailed Dockerfile instructions. Container template/blueprint.
+        - Instantiate multiple containers based upon an image. Stand-alone and independent from other containers that may be running.
+    5. Managing images & containers.
+        - HINT: Add --help with any Docker command.
+        - Stopping & restarting containers
+        - All containers: docker ps -a. Running containers: docker -ps
+        - docker run will spin up a new container. To restart an existing container: docker start "container id|name"
+        - NOTE: docker start will run a container within the background. docker run spin up a container in the foreground. Detached versus attached mode.
+        - Attached: listening to the output of *that* container. Detached. And attached midstream:
+        ```javascript
+            docker run -p 8000:80 -d a0da77fb36b8
+            docker attach silly_brattain
+            docker logs silly_brattain
+        ```
+    6. Interactive mode: e.g.: Code that requires keyboard input.
+        ```javascript
+            FROM python
+            WORKDIR /app
+            COPY . /app
+            CMD ["python", "rng.py"]
+        ```
+        - After 'docker run,' unable to interact with the container as it is running detached.
+        - So we need to interact with out container and create a terminal: (The terminal connects with a container-exposed psyeudo termnal.)
+        ```javascript
+            docker run -it e65dca5ecb69
+            ducker start -a -i heuristic_haslett
+        ```
+    7. Removing containers and images:
+        ```javascript
+            docker ps
+            docker stop running_container
+            ducker rm running_container another_container and_another_container
+        ```
+        - NOTE: Prune to remove all images.
+        ```javascript
+            docker images
+            docker image prune
+            ducker rmi image_id
+        ```
+        - NOTE: Remove container after run. --rm
+        ```javascript
+            docker run -p 3000:80 -d --rm container_id
+        ```
+    8. Behind The Scenes.
+        ```javascript
+            docker image inspect image_id
+        ```
+    9. Copy files/folders into/out of a running container. Folder will be created if not exist.
+        ```javascript
+            docker cp source/. container_name:/destination
+        ```
+        - We can add without restart and reimage. Or copy out of container. e.g.: log files
+        ```javascript
+            docker cp source/. container_name:/destination
+        ```
+    10. Set own name/tag. Used to identify and version. Combined, you will always have a garenteed unique identifier.
+        - Name: Define a group of, possible more specialized, images.
+        - Tag: Dinfine a specialized image within a group of images.
+        ```javascript
+            docker run -p 3000:80 -d --rm --name myapp container_id
+            docker stop myapp
+            docker build -t goals:latest .
+        ```
+    11. Problem. Create node application image. Node app:
+        ```javascript
+            FROM node:14
+            WORKDIR /app
+            COPY package.json .
+            RUN npm install
+            COPY . .
+            EXPOSE 3000
+            CMD ["node", "server.js"]
+        ```
+        ```javascript
+            docker build .
+            docker images
+            docker run -p 8003:3000 --name nodeapp image_id
+            docker stop container_name
+        ```
+        - Python app. Fetches user input:
+        ```javascript
+            FROM python:3.7
+            WORKDIR /app
+            COPY . .
+            CMD ["python", "bmi.py"]
+        ```
+        ```javascript
+            docker build .
+            docker images
+            docker run -it --name pythonapp image_id
+        ```
+        ```javascript
+            docker ps -a
+            docker start nodeapp
+            docker start -i -a pythonapp
+            docker stop nodeapp
+            docker rm nodeapp pythonapp
+            docker ps -a
+            docker images
+            docker rmi image_id
+        ```
+        ```javascript
+            docker build -t demo1:latest .
+            docker images
+            docker run -p 8003:3000 -d --name demoapp --rm demo1:latest
+        ```
+    12. Sharing:
+        - Everyone who has an image can create a container based upon that image.
+        - Share a finished image. Download and run a container based upon it. No build step is required. This is how we typically share.
+        - Or share a docker file. Run docker build. NOTE: The dockerfile instructions might need surrounding files & folders. e.g.: source code.
+    13. Pushing to DockerHub:
+        - Built-in commands. Two main places where to push: Docker Hub. A Private Registry. The Docker Hub free plan has what we need. Push/Pull.
+    14. Summary:
+        - All about images. Templates/blueprints for containers. Layers.
+        - And containers. Downloaded or created with a Dockerfile and docker build.
+        - Multiple layers are optimized to build speed and reusabiliyu.
+        - Containers are created with docker run image.
+
+- MANAGING DATA & WORKING WITH VOLUMES:
+    - src/real application. Creating/copying local files.
+    - Data? Application (code & environment.) Code written by the developer. Once image is built, Fixed. Cannot be changed once the (read-only) image is built.
+        - Temporary application data. Fetched/produced in running container. Memory or temporary files. Dynamic and changing. Read/write. Stored in containers, not images.
+        - Permanent application data. e.g.: User accounts. Data needs to persist. Read/write data, stored permanent. Stored in containers with help of voulmes.
+    
+
