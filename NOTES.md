@@ -207,5 +207,20 @@
     - Data? Application (code & environment.) Code written by the developer. Once image is built, Fixed. Cannot be changed once the (read-only) image is built.
         - Temporary application data. Fetched/produced in running container. Memory or temporary files. Dynamic and changing. Read/write. Stored in containers, not images.
         - Permanent application data. e.g.: User accounts. Data needs to persist. Read/write data, stored permanent. Stored in containers with help of voulmes.
-    
+    ```javascript
+        docker build -t feedback-node .
+        docker run -p 3000:80 --name feedback-app --rm feedback node
+    ```
+    - NOTE: Tag with default feedback-node:latest is created.
+    - http://localhost:3000/
+    - http://localhost:3000/feedback/awesome.txt
 
+    - File is "lost" when container is removed. Not when the container is stopped.
+    - File system is inside the container. Container is read-only.
+    - File is written to read/write portion of the container. NOT the image. The solution?
+    - Introducing VOLUMES. Help with data persistence.
+    - Folders on your host machine. Not in the container and not in the image but in your host machine.
+    - Mapped to folders inside a Docker container.
+    - Volumes are folders on your host machine hard drive which are mounted (mapped) into containers.
+    - Volumes persist if a container is shut down. Upon restart and mount, any data inside is available in the container. 
+    - Containers can read/write data from a volume.
