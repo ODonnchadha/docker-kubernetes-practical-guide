@@ -207,20 +207,64 @@
     - Data? Application (code & environment.) Code written by the developer. Once image is built, Fixed. Cannot be changed once the (read-only) image is built.
         - Temporary application data. Fetched/produced in running container. Memory or temporary files. Dynamic and changing. Read/write. Stored in containers, not images.
         - Permanent application data. e.g.: User accounts. Data needs to persist. Read/write data, stored permanent. Stored in containers with help of voulmes.
+    - Add a volume? Use the Dockerfile. And understand the feedback folder. "New" image.
     ```javascript
-        docker build -t feedback-node .
-        docker run -p 3000:80 --name feedback-app --rm feedback node
-    ```
-    - NOTE: Tag with default feedback-node:latest is created.
-    - http://localhost:3000/
-    - http://localhost:3000/feedback/awesome.txt
+        EXPOSE 80
+        VOLUME [ "/app/feedback" ]
+        CMD [ "node", "server.js" ]
 
-    - File is "lost" when container is removed. Not when the container is stopped.
-    - File system is inside the container. Container is read-only.
-    - File is written to read/write portion of the container. NOT the image. The solution?
-    - Introducing VOLUMES. Help with data persistence.
-    - Folders on your host machine. Not in the container and not in the image but in your host machine.
-    - Mapped to folders inside a Docker container.
-    - Volumes are folders on your host machine hard drive which are mounted (mapped) into containers.
-    - Volumes persist if a container is shut down. Upon restart and mount, any data inside is available in the container. 
-    - Containers can read/write data from a volume.
+        docker stop feedback-app
+        docker rm feedback-app
+        docker run -d -p 3000:80 --rm --name feedback-app feedback-node:volume
+        docker logs feedback-app
+    ```
+    - ERROR: "Cross-device link is not permitted." So we'll modify the source code:
+    ```javascript
+        await fs.rename(tempFilePath, finalFilePath);
+        await fs.copyFile(tempFilePath, finalFilePath);
+        await fs.unlink(tempFilePath);
+    ```
+    - Stop, rebuild the image now that we have a source code change.
+    ```javascript
+        docker stop feedback-app
+        docker rmi feedback-node:volume
+        docker build -t feedback-node:volume .
+    ```
+    -  And stop/restart. State does not remain. Why?
+    - Two types of external data storage:
+        1. VOLUMES. Managed by Docker.
+        - In both cases Docker sets up a folder/path on the host machine, exact location unknown, managed via Docker volume commands. 
+        - Reminder: We only specified the path "inside" the container.
+            a. Anonymous voulmes. "Only" exists as long as the container exists. Any removal will ensure that the anonymous container does not exist/deleted.
+                - With named volumes, all data will still be available. Great for persistent data that is not needed to view and retrieve. Not meant to edit by user.
+                ```javascript
+                    docker volume --help
+                    docker volume ls
+                ```
+            b. Named volumes. A defined path in the container is mapped to the create volume/mount. e.g.: A hosting machine path is mapped. 
+                - NOTE: Named volumes are not attached to a given container. We can stop/start and have our state data available. Use same -v option.
+                ```javascript
+                    docker run -d -p 3000:80 --rm --name feedback-app -v feedback:/app/feeback feedback-node:volume
+                    docker volume ls
+                ```
+        2. BIND MOUNTS. Managed by user. Updated code and we need to rebuild the image since a snapshot is copied and not reflected within the image/container.
+            - Bind mounts are different from volumes because *we* set the path. Containers can read from volumes. Container can always have access to the source code.
+            - NOTE: -v "C:\ODonnchadha\docker-kubernetes-practical-guide\src\real:/app"
+            ```javascript
+                docker run -d -p 3008:80 --name xyz -v feedback:/app/feedback -v "C:\ODonnchadha\docker-kubernetes-practical-guide\src\real:/app" -v /app/node_modules feedback-node:volume
+            ```
+            - NOTE: Ensure that Docker has access. Properties. Resources. File Sharing. "You are using WSL 2 backend, so resource limits are managed by Windows."
+            - Parent folder. Note the full file path. If properties/resources option is missing, you will have no problems with permissions.
+            - Add an anaoymous voulme. Docker evaluates all volumes within a container.
+            ```javascript
+                -v /app/node_modules
+                # VOLUME ["/app/node_modules"]
+
+                docker login
+                docker build -t feedback-node:volume .
+                docker stop feedback-app
+                docker start feedback-app
+            ```
+            - Ensure that the node_modules folder does not get overwritten. However, if you modify JavaScript instead of HTML, you will not see the changes.
+            - We will need to stop and restart, without a rebuild.
+            - We can use an additional node.js package that reflects changes instantly.
